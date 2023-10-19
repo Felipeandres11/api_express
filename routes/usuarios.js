@@ -1,14 +1,15 @@
 import Router from 'express'
-const router = Router();
-import {usuariosGet, usuariosPOST,usuariosPUT} from '../controllers/usuarios.js'
+const usuarios_router = Router();
+import {usuariosGet, usuariosPOST,usuariosPUT, usuariosDelete} from '../controllers/usuarios.js'
 import { validarCampos } from "../middlewares/validar-campos.js";
 import { check } from 'express-validator';
 import {esRolValido, existeEmail, existeUsuarioPorId} from '../helpers/db-validators.js'
+import {validarJWT} from '../middlewares/validar-jwt.js'
 
 
 
-router.get('/', usuariosGet)
-router.post('/', 
+usuarios_router.get('/', usuariosGet)
+usuarios_router.post('/', 
     [
        check('correo', 'El correo no es valido').isEmail(),
        check('correo').custom((correo) => existeEmail(correo)),
@@ -18,7 +19,7 @@ router.post('/',
        validarCampos
     ]
 ,usuariosPOST)
-router.put('/:id', [
+usuarios_router.put('/:id', [
     check('id', 'No es un ID valido').isMongoId(),
     check('id').custom((id) => existeUsuarioPorId(id)),
     check('rol').custom((rol) => esRolValido(rol)),
@@ -26,4 +27,10 @@ router.put('/:id', [
 
 ], usuariosPUT,)
 
-export {router};
+usuarios_router.delete('/:id', [
+                       validarJWT,
+                       check('id', 'No es un ID valido').isMongoId(),
+                       check('id').custom((id) => existeUsuarioPorId(id)),validarCampos], 
+usuariosDelete)
+
+export {usuarios_router};
